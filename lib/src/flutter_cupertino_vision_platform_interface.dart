@@ -27,7 +27,7 @@ abstract class FlutterCupertinoVisionPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<List<String>?> imageToText(
+  Future<Map<dynamic, dynamic>?> imageToText(
       Uint8List imageData, ImageOrientation orientation) async {
     throw UnimplementedError('imageToText() has not been implemented.');
   }

@@ -1,9 +1,10 @@
 import 'package:flutter/services.dart';
+import 'package:flutter_cupertino_vision/src/flutter_cupertino_vision_method_channel.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_cupertino_vision/flutter_cupertino_vision_method_channel.dart';
 
 void main() {
-  MethodChannelFlutterCupertinoVision platform = MethodChannelFlutterCupertinoVision();
+  MethodChannelFlutterCupertinoVision platform =
+      MethodChannelFlutterCupertinoVision();
   const MethodChannel channel = MethodChannel('flutter_cupertino_vision');
 
   TestWidgetsFlutterBinding.ensureInitialized();

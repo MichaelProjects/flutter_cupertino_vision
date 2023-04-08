@@ -12,12 +12,12 @@ class MethodChannelFlutterCupertinoVision
   final methodChannel = const MethodChannel('flutter_cupertino_vision');
 
   @override
-  Future<List<String>?> imageToText(
+  Future<Map<dynamic, dynamic>?> imageToText(
       Uint8List imageData, ImageOrientation orientation) async {
     var result = await methodChannel.invokeMethod("imageToText",
         {"imageData": imageData, "orientation": orientation.toShortString()});
 
-    List<String> res = List.from(result);
+    Map<dynamic, dynamic> res = result;
     return res;
   }
 }

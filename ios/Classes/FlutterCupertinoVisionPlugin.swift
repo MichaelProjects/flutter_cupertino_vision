@@ -18,7 +18,6 @@ public class FlutterCupertinoVisionPlugin: NSObject, FlutterPlugin {
           pdata = args?["imageData"] as? FlutterStandardTypedData;
           orientation = args?["orientation"]! as? String
           
-          //let data = Data(referencing:NSData(bytes: pdata!, length: pdata!.count))
           let orientationV = matchOrientationString(str: orientation!)
             
             

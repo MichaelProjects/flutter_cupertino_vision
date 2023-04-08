@@ -44,6 +44,7 @@ class _MyAppState extends State<MyApp> {
                         setState(() {
                           content = x.toString();
                         });
+                        print(content);
                       },
                       child: Text("Select Image"))),
               Text(content)
