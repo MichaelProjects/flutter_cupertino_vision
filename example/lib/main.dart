@@ -29,7 +29,8 @@ class _MyAppState extends State<MyApp> {
           appBar: AppBar(
             title: const Text('Plugin example app'),
           ),
-          body: Column(
+          body: SingleChildScrollView(
+              child: Column(
             children: [
               Center(
                   child: TextButton(
@@ -38,18 +39,23 @@ class _MyAppState extends State<MyApp> {
                         final XFile? image = await _picker.pickImage(
                             source: ImageSource.gallery);
                         var data = await image!.readAsBytes();
-                        var x = await _flutterCupertinoVisionPlugin.imageToText(
-                            data, ImageOrientation.up);
-                        print("abc test");
+                        var x = await _flutterCupertinoVisionPlugin
+                            .extractTextboxesFromImage(
+                                data, ImageOrientation.up);
+
+                        // debug line to print content of receipt
+                        List<Map<String, dynamic>> newList =
+                            x!.map((element) => element.toMap()).toList();
+                        print(newList);
+
                         setState(() {
                           content = x.toString();
                         });
-                        print(content);
                       },
                       child: Text("Select Image"))),
               Text(content)
             ],
-          )),
+          ))),
     );
   }
 }

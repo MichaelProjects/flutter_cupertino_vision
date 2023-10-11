@@ -20,7 +20,7 @@ func recognizeTextHandler(request: VNRequest, error: Error?) {
     }
 
     // Process the recognized strings.
-    print(recognizedStrings)
+    //print(recognizedStrings)
 }
 func convert(_ a: Double, maxDecimals max: Int) -> Double {
     let stringArr = String(a).split(separator: ".")
@@ -88,6 +88,54 @@ func rowMatching(observations: [VNRecognizedTextObservation]) -> Array<Array<Str
 
 }
 
+
+/// This objects should represent a minimal version of [VNRecognizedTextObservation] and it contains all needed data to work with to determine where the given text is located on the image it was extracted from.
+struct DataPoint {
+    let x: Double
+    let y: Double
+    let height: Double
+    let width: Double
+    let candidates: [String]
+    
+    init(x: Double, y: Double, height: Double, width: Double, candidates: [String]) {
+        self.x = x
+        self.y = y
+        self.height = height
+        self.width = width
+        self.candidates = candidates
+    }
+}
+func dataPointToDictionary(dataPoint: DataPoint) -> [String: Any] {
+    return [
+        "x": dataPoint.x,
+        "y": dataPoint.y,
+        "height": dataPoint.height,
+        "width": dataPoint.width,
+        "candidates": dataPoint.candidates
+    ]
+}
+
+
+func prepareResultData(data: [VNRecognizedTextObservation]) -> [[String: Any]]{
+    var dataPoints: [[String: Any]] = [];
+    
+    for observation in data{
+        let observationMap: [String: Any] = [
+            "boundingBox": [
+                "left": observation.boundingBox.minX,
+                "top": observation.boundingBox.minY,
+                "width": observation.boundingBox.width,
+                "height": observation.boundingBox.height,
+            ],
+            "confidence": observation.confidence,
+            "candidates": observation.topCandidates(3).map({ $0.string }),
+        ]
+        dataPoints.append(observationMap);
+    }
+    return dataPoints
+}
+
+
 func experiment(data: [VNRecognizedTextObservation]){
     var runRow: Array<String> = []
     for obs in data{
@@ -99,11 +147,12 @@ func experiment(data: [VNRecognizedTextObservation]){
         }
         runRow.append(currentItem)
     }
-    print("iuzfsbdizfubsdufz")
-    print(runRow)
+    //print(runRow)
 }
 
-func processImage(data: Data, orientation: CGImagePropertyOrientation) -> [String: Any]? {
+
+/// Gets image data with the according orientation and uses the Apple VisonAPI to extract the text contained in the image.
+func extractText(data: Data, orientation: CGImagePropertyOrientation) -> [VNRecognizedTextObservation]? {
     let requestHandler = VNImageRequestHandler(data: data, orientation: orientation)
 
     // Create a new request to recognize text.
@@ -118,24 +167,28 @@ func processImage(data: Data, orientation: CGImagePropertyOrientation) -> [Strin
                 request.results as? [VNRecognizedTextObservation] else {
             return nil
         }
-        let recognizedStrings = observations.compactMap { observation in
-            // Return the string of the top VNRecognizedText instance.
-            print(observation)
-            print(observation.topCandidates(1).first?.string)
-            
-            return observation.topCandidates(1).first?.string
-        }
-        let analyze_result = rowMatching(observations: observations)
+        return observations
 
-        print(experiment(data: observations))
-        
-        let jsonData = try! JSONSerialization.data(withJSONObject: analyze_result)
-        
-        return [ "analyze": String(data: jsonData, encoding: .utf8)!, "raw": recognizedStrings]
     } catch {
         print("Unable to perform the requests: \(error).")
         return nil
     }
+}
+
+
+func processImage(data: Data, orientation: CGImagePropertyOrientation) -> [String: Any]? {
+    var observations = extractText(data: data, orientation: orientation);
+        let recognizedStrings = observations!.compactMap { observation in
+            
+            return observation.topCandidates(1).first?.string
+        }
+        let analyze_result = rowMatching(observations: observations!)
+
+        //print(experiment(data: observations!))
+        
+        let jsonData = try! JSONSerialization.data(withJSONObject: analyze_result)
+        
+        return [ "analyze": String(data: jsonData, encoding: .utf8)!, "raw": recognizedStrings]
 }
 
 func matchOrientationString(str: String) -> CGImagePropertyOrientation {

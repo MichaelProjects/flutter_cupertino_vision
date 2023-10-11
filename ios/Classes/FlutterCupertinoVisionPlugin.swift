@@ -25,6 +25,21 @@ public class FlutterCupertinoVisionPlugin: NSObject, FlutterPlugin {
         
         result(res)
         break;
+      case "extractTextboxesFromImage":
+        var pdata: FlutterStandardTypedData?;
+        var orientation: String?;
+        
+        let args = call.arguments as? [String: Any]
+        pdata = args?["imageData"] as? FlutterStandardTypedData;
+        orientation = args?["orientation"]! as? String
+        
+        let orientationV = matchOrientationString(str: orientation!)
+        
+        let res = extractText(data: Data(pdata!.data), orientation: orientationV)
+        let obervations: [[String: Any]] = prepareResultData(data: res!)
+        
+        result(obervations)
+        
       default:
         result("abc")
     }

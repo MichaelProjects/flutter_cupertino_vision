@@ -31,4 +31,9 @@ abstract class FlutterCupertinoVisionPlatform extends PlatformInterface {
       Uint8List imageData, ImageOrientation orientation) async {
     throw UnimplementedError('imageToText() has not been implemented.');
   }
+
+  Future<List<VNRecognizedTextObservation>?> extractTextboxesFromImage(
+      Uint8List imageData, ImageOrientation orientation) async {
+    throw UnimplementedError('imageToText() has not been implemented.');
+  }
 }
