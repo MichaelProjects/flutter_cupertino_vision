@@ -1,47 +1,35 @@
 import Flutter
 import UIKit
 
-public class FlutterCupertinoVisionPlugin: NSObject, FlutterPlugin {
-  public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(name: "flutter_cupertino_vision", binaryMessenger: registrar.messenger())
-    let instance = FlutterCupertinoVisionPlugin()
-    registrar.addMethodCallDelegate(instance, channel: channel)
-  }
+enum ImageError: Error {
+    case parsingFailed
+}
 
-  public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-    switch call.method {
-      case "imageToText":
-          var pdata: FlutterStandardTypedData?;
-          var orientation: String?;
-          let args = call.arguments as? [String: Any]
+public class FlutterCupertinoVisionPlugin: NSObject, ImageProcessingApi, FlutterPlugin {
+    func imageToText(imageData: InputImageData, completion: @escaping (Result<[VisionResponse], Error>) -> Void) {
         
-          pdata = args?["imageData"] as? FlutterStandardTypedData;
-          orientation = args?["orientation"]! as? String
-          
-          let orientationV = matchOrientationString(str: orientation!)
-            
-            
-        let res = processImage(data: Data(pdata!.data), orientation: orientationV)
-        
-        result(res)
-        break;
-      case "extractTextboxesFromImage":
-        var pdata: FlutterStandardTypedData?;
-        var orientation: String?;
-        
-        let args = call.arguments as? [String: Any]
-        pdata = args?["imageData"] as? FlutterStandardTypedData;
-        orientation = args?["orientation"]! as? String
-        
-        let orientationV = matchOrientationString(str: orientation!)
-        
-        let res = extractText(data: Data(pdata!.data), orientation: orientationV)
-        let obervations: [[String: Any]] = prepareResultData(data: res!)
-        
-        result(obervations)
-        
-      default:
-        result("abc")
+        let res = extractTextFromImage(data: imageData.data.data, orientation: imageData.orientation.toCGImagePropertyOrientation())
+    
+        completion(.success(res))
     }
+
+    func documentDetection(imageData: InputImageData, completion: @escaping (Result<[VisionResponse], Error>) -> Void) {
+        // Implement your logic for document detection
+        // Return the result or error via the completion handler
+        let res = documentDetectionNewFunction(data: imageData.data.data, orientation: imageData.orientation.toCGImagePropertyOrientation())
+        if let res = res {
+            // If 'res' is not nil, return it as a success result
+            completion(.success(res))
+        } else {
+            // If 'res' is nil, return an empty array as a success result
+            completion(.success([]))
+        }
+    }
+    
+  public static func register(with registrar: FlutterPluginRegistrar
+  ) {
+  let messenger : FlutterBinaryMessenger = registrar.messenger()
+      let api: ImageProcessingApi = FlutterCupertinoVisionPlugin.init();
+      ImageProcessingApiSetup.setUp(binaryMessenger: messenger, api: api)
   }
 }

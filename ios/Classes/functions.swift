@@ -152,9 +152,9 @@ func experiment(data: [VNRecognizedTextObservation]){
 
 
 /// Gets image data with the according orientation and uses the Apple VisonAPI to extract the text contained in the image.
-func extractText(data: Data, orientation: CGImagePropertyOrientation) -> [VNRecognizedTextObservation]? {
-    let requestHandler = VNImageRequestHandler(data: data, orientation: orientation)
-
+func extractText(data: CGImage, orientation: CGImagePropertyOrientation) -> [VNRecognizedTextObservation]? {
+    let requestHandler = VNImageRequestHandler(cgImage: data, orientation: orientation)
+    
     // Create a new request to recognize text.
     let request = VNRecognizeTextRequest()
     request.recognitionLevel = .accurate
@@ -176,7 +176,7 @@ func extractText(data: Data, orientation: CGImagePropertyOrientation) -> [VNReco
 }
 
 
-func processImage(data: Data, orientation: CGImagePropertyOrientation) -> [String: Any]? {
+func processImage(data: CGImage, orientation: CGImagePropertyOrientation) -> [String: Any]? {
     var observations = extractText(data: data, orientation: orientation);
         let recognizedStrings = observations!.compactMap { observation in
             
@@ -191,18 +191,98 @@ func processImage(data: Data, orientation: CGImagePropertyOrientation) -> [Strin
         return [ "analyze": String(data: jsonData, encoding: .utf8)!, "raw": recognizedStrings]
 }
 
-func matchOrientationString(str: String) -> CGImagePropertyOrientation {
-    switch str {
-    case "up":
-        return CGImagePropertyOrientation.up
-    case "down":
-        return CGImagePropertyOrientation.down
-    case "left":
-        return CGImagePropertyOrientation.left
-    case "right":
-        return CGImagePropertyOrientation.right
-    default:
-        return CGImagePropertyOrientation.up
-    }
+func extractTextFromImage(data: Data, orientation: CGImagePropertyOrientation) -> [VisionResponse] {
+    let handler = VNImageRequestHandler(data: data, orientation: orientation, options: [:])
+    let request = VNRecognizeTextRequest(completionHandler: nil)
     
+    do {
+        try handler.perform([request])
+        guard let observations = request.results as? [VNRecognizedTextObservation] else { return [] }
+        
+        return observations.compactMap { observation in
+            guard let topCandidate = observation.topCandidates(1).first else { return nil }
+            
+            let boundingBox = observation.boundingBox
+            let transformedRect = transformBoundingBox(boundingBox)
+            
+            let visionResponse = VisionResponse(
+                boundingBox: BoundingBox(
+                    left: Double(transformedRect.origin.x),
+                    top: Double(transformedRect.origin.y),
+                    width: Double(transformedRect.width),
+                    height: Double(transformedRect.height)
+                ),
+                confidence: Double(topCandidate.confidence)
+            )
+            
+            return visionResponse
+        }
+    } catch {
+        print("Error in text recognition: \(error)")
+        return []
+    }
+}
+
+func transformBoundingBox(_ rect: CGRect) -> CGRect {
+    // Transform the rect from VNImageCoordinateSystem to your view's coordinate system.
+    // The transformation depends on how you're displaying the image.
+    // This is a placeholder function. You'll need to implement the actual transformation.
+    return rect
+}
+
+public func documentDetectionFunction(data: CGImage, orientation: CGImagePropertyOrientation) -> [VNRectangleObservation]? {
+    let requestHandler = VNImageRequestHandler(cgImage: data, orientation: orientation)
+    
+    if #available(iOS 15.0, *) {
+        let request = VNDetectDocumentSegmentationRequest()
+        do {
+            try requestHandler.perform([request])
+            guard let observations =
+                    request.results as? [VNRectangleObservation] else {
+                return nil
+            }
+            return observations
+
+        } catch {
+            print("Unable to perform the requests: \(error).")
+            return nil
+        }
+    } else {
+        
+    }
+    return nil
+    
+}
+
+public func documentDetectionNewFunction(data: Data, orientation: CGImagePropertyOrientation) -> [VisionResponse]? {
+    let requestHandler = VNImageRequestHandler(data: data, orientation: orientation)
+
+    if #available(iOS 15.0, *) {
+        let request = VNDetectDocumentSegmentationRequest()
+        do {
+            try requestHandler.perform([request])
+            guard let observations = request.results as? [VNRectangleObservation] else {
+                return nil
+            }
+
+            return observations.map { observation in
+                let boundingBox = BoundingBox(
+                    left: Double(observation.boundingBox.origin.x),
+                    top: Double(observation.boundingBox.origin.y),
+                    width: Double(observation.boundingBox.size.width),
+                    height: Double(observation.boundingBox.size.height)
+                )
+                let confidence = Double(observation.confidence)
+                
+                return VisionResponse(boundingBox: boundingBox, confidence: confidence)
+            }
+
+        } catch {
+            print("Unable to perform the requests: \(error).")
+            return nil
+        }
+    } else {
+        // Handle older iOS versions or return a default value
+        return nil
+    }
 }

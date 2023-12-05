@@ -1,9 +1,9 @@
 import 'dart:typed_data';
 
+import 'package:flutter_cupertino_vision/src/image_processing_api.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'flutter_cupertino_vision_method_channel.dart';
-import 'models.dart';
 
 abstract class FlutterCupertinoVisionPlatform extends PlatformInterface {
   /// Constructs a FlutterCupertinoVisionPlatform.
@@ -11,8 +11,7 @@ abstract class FlutterCupertinoVisionPlatform extends PlatformInterface {
 
   static final Object _token = Object();
 
-  static FlutterCupertinoVisionPlatform _instance =
-      MethodChannelFlutterCupertinoVision();
+  static FlutterCupertinoVisionPlatform _instance = FlutterCupertinoVisionKit();
 
   /// The default instance of [FlutterCupertinoVisionPlatform] to use.
   ///
@@ -27,13 +26,9 @@ abstract class FlutterCupertinoVisionPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<Map<dynamic, dynamic>?> imageToText(
-      Uint8List imageData, ImageOrientation orientation) async {
-    throw UnimplementedError('imageToText() has not been implemented.');
-  }
+  Future<List<VisionResponse?>> extractTextFromImage(
+      Uint8List imageData, int width, int height, ImageOrientation orientation);
 
-  Future<List<VNRecognizedTextObservation>?> extractTextboxesFromImage(
-      Uint8List imageData, ImageOrientation orientation) async {
-    throw UnimplementedError('imageToText() has not been implemented.');
-  }
+  Future<List<VisionResponse?>> documentDetection(
+      Uint8List imageData, int width, int height, ImageOrientation orientation);
 }
