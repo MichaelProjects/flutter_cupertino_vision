@@ -45,21 +45,6 @@ enum ImageOrientation: Int {
   case right = 3
 }
 
-extension ImageOrientation {
-    func toCGImagePropertyOrientation() -> CGImagePropertyOrientation {
-        switch self {
-        case .up:
-            return .up
-        case .down:
-            return .down
-        case .left:
-            return .left
-        case .right:
-            return .right
-        }
-    }
-}
-
 /// Generated class from Pigeon that represents data sent in messages.
 struct InputImageData {
   var width: Int64
@@ -91,7 +76,7 @@ struct InputImageData {
 }
 
 /// Generated class from Pigeon that represents data sent in messages.
-public struct BoundingBox {
+struct BoundingBox {
   var left: Double
   var top: Double
   var width: Double
@@ -124,20 +109,24 @@ public struct BoundingBox {
 public struct VisionResponse {
   var boundingBox: BoundingBox
   var confidence: Double
+  var candiates: [String?]
 
   static func fromList(_ list: [Any?]) -> VisionResponse? {
     let boundingBox = BoundingBox.fromList(list[0] as! [Any?])!
     let confidence = list[1] as! Double
+    let candiates = list[2] as! [String?]
 
     return VisionResponse(
       boundingBox: boundingBox,
-      confidence: confidence
+      confidence: confidence,
+      candiates: candiates
     )
   }
   func toList() -> [Any?] {
     return [
       boundingBox.toList(),
       confidence,
+      candiates,
     ]
   }
 }
@@ -235,66 +224,4 @@ class ImageProcessingApiSetup {
       documentDetectionChannel.setMessageHandler(nil)
     }
   }
-}
-import UIKit
-import CoreGraphics
-
-extension CGImage {
-    static func create(with inputData: InputImageData) -> CGImage? {
-        let width = Int(inputData.width)
-        let height = Int(inputData.height)
-        let data = inputData.data.data
-
-        // Determine color space and bytes per pixel based on the data length
-        let totalBytes = data.count
-        let totalPixels = width * height
-
-        let bytesPerPixel = totalBytes / totalPixels
-        let bitsPerComponent = 8 // Common value for RGB and grayscale
-
-        // Adjust bytes per row if needed
-        let bytesPerRow = width * bytesPerPixel
-
-        // Determine color space based on bytes per pixel
-        let colorSpace: CGColorSpace
-        if bytesPerPixel == 4 {
-            colorSpace = CGColorSpaceCreateDeviceRGB()
-        } else if bytesPerPixel == 3 {
-            colorSpace = CGColorSpaceCreateDeviceRGB()
-        } else {
-            print("bytesPerPixel", bytesPerPixel)
-          
-            // Add additional conditions for other color formats if needed
-            print("No color space")
-            return nil
-        }
-
-        let bitmapInfo: CGBitmapInfo
-        if bytesPerPixel == 4 {
-            bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)
-        } else {
-            print("bitmap", bytesPerPixel)
-            // Add additional conditions for other bitmap info formats if needed
-            print("no bitmap")
-            return nil
-        }
-
-        guard let providerRef = CGDataProvider(data: data as CFData) else { 
-            print("Could not parse")
-            return nil }
-
-        return CGImage(
-            width: width,
-            height: height,
-            bitsPerComponent: bitsPerComponent,
-            bitsPerPixel: bitsPerComponent * bytesPerPixel,
-            bytesPerRow: bytesPerRow,
-            space: colorSpace,
-            bitmapInfo: bitmapInfo,
-            provider: providerRef,
-            decode: nil,
-            shouldInterpolate: true,
-            intent: .defaultIntent
-        )
-    }
 }

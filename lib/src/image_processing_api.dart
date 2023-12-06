@@ -7,9 +7,7 @@ import 'dart:typed_data' show Float64List, Int32List, Int64List, Uint8List;
 
 import 'package:flutter/foundation.dart' show ReadBuffer, WriteBuffer;
 import 'package:flutter/services.dart';
-
-List<Object?> wrapResponse(
-    {Object? result, PlatformException? error, bool empty = false}) {
+List<Object?> wrapResponse({Object? result, PlatformException? error, bool empty = false}) {
   if (empty) {
     return <Object?>[];
   }
@@ -102,16 +100,20 @@ class VisionResponse {
   VisionResponse({
     required this.boundingBox,
     required this.confidence,
+    required this.candiates,
   });
 
   BoundingBox boundingBox;
 
   double confidence;
 
+  List<String?> candiates;
+
   Object encode() {
     return <Object?>[
       boundingBox.encode(),
       confidence,
+      candiates,
     ];
   }
 
@@ -120,6 +122,7 @@ class VisionResponse {
     return VisionResponse(
       boundingBox: BoundingBox.decode(result[0]! as List<Object?>),
       confidence: result[1]! as double,
+      candiates: (result[2] as List<Object?>?)!.cast<String?>(),
     );
   }
 }
@@ -145,11 +148,11 @@ class _ImageProcessingApiCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128:
+      case 128: 
         return BoundingBox.decode(readValue(buffer)!);
-      case 129:
+      case 129: 
         return InputImageData.decode(readValue(buffer)!);
-      case 130:
+      case 130: 
         return VisionResponse.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -167,11 +170,9 @@ class ImageProcessingApi {
 
   static const MessageCodec<Object?> codec = _ImageProcessingApiCodec();
 
-  Future<List<VisionResponse?>> imageToText(
-      InputImageData arg_imageData) async {
+  Future<List<VisionResponse?>> imageToText(InputImageData arg_imageData) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.flutter_cupertino_vision.ImageProcessingApi.imageToText',
-        codec,
+        'dev.flutter.pigeon.flutter_cupertino_vision.ImageProcessingApi.imageToText', codec,
         binaryMessenger: _binaryMessenger);
     final List<Object?>? replyList =
         await channel.send(<Object?>[arg_imageData]) as List<Object?>?;
@@ -196,11 +197,9 @@ class ImageProcessingApi {
     }
   }
 
-  Future<List<VisionResponse?>> documentDetection(
-      InputImageData arg_imageData) async {
+  Future<List<VisionResponse?>> documentDetection(InputImageData arg_imageData) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.flutter_cupertino_vision.ImageProcessingApi.documentDetection',
-        codec,
+        'dev.flutter.pigeon.flutter_cupertino_vision.ImageProcessingApi.documentDetection', codec,
         binaryMessenger: _binaryMessenger);
     final List<Object?>? replyList =
         await channel.send(<Object?>[arg_imageData]) as List<Object?>?;

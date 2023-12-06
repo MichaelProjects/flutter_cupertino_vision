@@ -212,7 +212,7 @@ func extractTextFromImage(data: Data, orientation: CGImagePropertyOrientation) -
                     width: Double(transformedRect.width),
                     height: Double(transformedRect.height)
                 ),
-                confidence: Double(topCandidate.confidence)
+                confidence: Double(topCandidate.confidence), candiates: [topCandidate.string]
             )
             
             return visionResponse
@@ -254,6 +254,10 @@ public func documentDetectionFunction(data: CGImage, orientation: CGImagePropert
     
 }
 
+
+
+
+
 public func documentDetectionNewFunction(data: Data, orientation: CGImagePropertyOrientation) -> [VisionResponse]? {
     let requestHandler = VNImageRequestHandler(data: data, orientation: orientation)
 
@@ -273,8 +277,7 @@ public func documentDetectionNewFunction(data: Data, orientation: CGImagePropert
                     height: Double(observation.boundingBox.size.height)
                 )
                 let confidence = Double(observation.confidence)
-                
-                return VisionResponse(boundingBox: boundingBox, confidence: confidence)
+                return VisionResponse(boundingBox: boundingBox, confidence: confidence, candiates: [])
             }
 
         } catch {
@@ -284,5 +287,21 @@ public func documentDetectionNewFunction(data: Data, orientation: CGImagePropert
     } else {
         // Handle older iOS versions or return a default value
         return nil
+    }
+}
+
+
+extension ImageOrientation {
+    func toCGImagePropertyOrientation() -> CGImagePropertyOrientation {
+        switch self {
+        case .up:
+            return .up
+        case .down:
+            return .down
+        case .left:
+            return .left
+        case .right:
+            return .right
+        }
     }
 }

@@ -23,7 +23,8 @@ class BoundingBox {
 class VisionResponse {
   BoundingBox boundingBox;
   double confidence;
-  VisionResponse(this.boundingBox, this.confidence);
+  List<String?> candiates;
+  VisionResponse(this.boundingBox, this.confidence, this.candiates);
 }
 
 @HostApi()

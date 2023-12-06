@@ -70,16 +70,15 @@ class _MyAppState extends State<MyApp> {
                         var transformedImage =
                             await createInputImageDataFromXFile(image!);
                         var x = await _flutterCupertinoVisionPlugin
-                            .extractTextFromImage(
-                                transformedImage.data,
-                                transformedImage.width,
-                                transformedImage.height,
-                                transformedImage.orientation);
+                            .extractTextFromImage(transformedImage);
 
                         print(x);
 
                         setState(() {
-                          content = x.toString();
+                          content = x
+                              .map((e) => [e!.candiates.first])
+                              .toList()
+                              .toString();
                         });
                       },
                       child: Text("Select Image"))),

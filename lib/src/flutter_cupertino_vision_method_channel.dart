@@ -13,25 +13,25 @@ class FlutterCupertinoVisionKit extends FlutterCupertinoVisionPlatform {
   );
 
   @override
-  Future<List<VisionResponse?>> documentDetection(Uint8List imageData,
-      int width, int height, ImageOrientation orientation) async {
+  Future<List<VisionResponse?>> documentDetection(
+      InputImageData inputImageData) async {
     var res = await ImageProcessingApi().documentDetection(InputImageData(
-        width: width,
-        height: height,
-        orientation: orientation,
-        data: imageData));
+        width: inputImageData.width,
+        height: inputImageData.height,
+        orientation: inputImageData.orientation,
+        data: inputImageData.data));
 
     return res;
   }
 
   @override
-  Future<List<VisionResponse?>> extractTextFromImage(Uint8List imageData,
-      int width, int height, ImageOrientation orientation) async {
+  Future<List<VisionResponse?>> extractTextFromImage(
+      InputImageData inputImageData) async {
     var res = await ImageProcessingApi().imageToText(InputImageData(
-        data: imageData,
-        width: width,
-        height: height,
-        orientation: orientation));
+        data: inputImageData.data,
+        width: inputImageData.width,
+        height: inputImageData.height,
+        orientation: inputImageData.orientation));
 
     return res;
   }

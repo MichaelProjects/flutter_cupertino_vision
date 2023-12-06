@@ -27,8 +27,8 @@ abstract class FlutterCupertinoVisionPlatform extends PlatformInterface {
   }
 
   Future<List<VisionResponse?>> extractTextFromImage(
-      Uint8List imageData, int width, int height, ImageOrientation orientation);
+      InputImageData inputImageData);
 
   Future<List<VisionResponse?>> documentDetection(
-      Uint8List imageData, int width, int height, ImageOrientation orientation);
+      InputImageData inputImageData);
 }
